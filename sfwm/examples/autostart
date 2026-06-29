@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+# sommerfluss autostart — the sfwm equivalent of the hlwm autostart.
+#
+# sfwm launches this script on startup (see spawn_autostart in main.rs) with
+# SOMMERFLUSS_SOCKET set, so the `sc` calls below connect back to the running WM.
+# This is the bash-config layer: `hc` becomes `sc`, near 1:1 with hlwm.
+#
+# MILESTONE 2 SCOPE: only the monitor topology is implemented in sfwm so far —
+# set_monitors / add_monitor / raise_monitor / lock_tag / pad, plus use/move and
+# spawn. Keybindings, rules, theming, floating, and the frame tree arrive in later
+# milestones; the corresponding hlwm lines are kept below as commented TODOs so
+# this file grows into a full port rather than being rewritten.
+
+sc() { command sc "$@"; }
+
+# --- keybindings (hlwm `keybind`; modifiers joined with + or -) -----------------
+Mod=Mod4   # super key, as in hlwm
+
+sc keyunbind --all
+
+# session
+sc keybind $Mod-Shift-q quit
+sc keybind $Mod-Shift-r reload
+
+# program shortcuts (point these at whatever you actually run)
+sc keybind $Mod-Return spawn alacritty
+sc keybind $Mod-m      spawn rofi -show drun
+
+# tags: $Mod-N shows tag N on the focused monitor, $Mod-Shift-N moves the window
+for i in $(seq 1 9); do
+    sc keybind "$Mod-$i"       use  "$i"
+    sc keybind "$Mod-Shift-$i" move "$i"
+done
+
+# cycle tags, skipping ones already visible on another monitor
+sc keybind $Mod-period use_index +1 --skip-visible
+sc keybind $Mod-comma  use_index -1 --skip-visible
+
+# monitor focus
+sc keybind $Mod-BackSpace cycle_monitor
+
+# frame-tree focus / move (arrows and vim keys)
+for pair in "Left left" "Down down" "Up up" "Right right" "h left" "j down" "k up" "l right"; do
+    set -- $pair
+    sc keybind "$Mod-$1"       focus "$2"
+    sc keybind "$Mod-Shift-$1" shift "$2"
+done
+
+# splitting frames (new empty frame in the given direction)
+sc keybind $Mod-u             split top  0.5
+sc keybind $Mod-o             split left 0.5
+sc keybind $Mod-Control-space split explode
+
+# resizing the focused frame
+resizestep=0.03
+sc keybind $Mod-Control-h resize left  $resizestep
+sc keybind $Mod-Control-j resize down  $resizestep
+sc keybind $Mod-Control-k resize up    $resizestep
+sc keybind $Mod-Control-l resize right $resizestep
+
+# within-frame layout (set + cycle)
+sc keybind $Mod-Control-0 set_layout vertical
+sc keybind $Mod-Control-1 set_layout horizontal
+sc keybind $Mod-Control-2 set_layout max
+sc keybind $Mod-Control-3 set_layout grid
+sc keybind $Mod-space     cycle_layout
+
+# frame / window cycling and removal
+sc keybind $Mod-r         remove
+sc keybind $Mod-g         cycle
+sc keybind $Mod-Tab       cycle_all +1
+sc keybind $Mod-Shift-Tab cycle_all -1
+
+# per-window modes
+sc keybind $Mod-Shift-c    close
+sc keybind $Mod-f          fullscreen toggle
+sc keybind $Mod-p          pseudotile toggle
+sc keybind $Mod-Shift-space floating toggle
+
+# mouse: move / resize floating windows with the modifier held
+sc mouseunbind --all
+sc mousebind $Mod-Button1       move
+sc mousebind $Mod-Button2       zoom
+sc mousebind $Mod-Shift-Button1 resize
+
+# media keys (no modifier)
+sc keybind XF86AudioRaiseVolume  spawn /home/daniel/scripts/utils/dankvol -d 2
+sc keybind XF86AudioLowerVolume  spawn /home/daniel/scripts/utils/dankvol -s 2
+sc keybind XF86MonBrightnessUp   spawn /usr/bin/light -A 5
+sc keybind XF86MonBrightnessDown spawn /usr/bin/light -U 5
+
+# my_monitor tag affinity: `use N` first focuses the tag's home monitor.
+# Set a tag's home monitor with `set_tag_monitor <tag> <monitor>`, e.g.:
+# sc set_tag_monitor 8 float1
+# sc set_tag_monitor 9 float2
+# (The full hlwm attribute-tree `chain`/`substitute`/`compare` language — and the
+#  scratchpad save/load-state that builds on it — is the remaining milestone.)
+
+# --- layout & theme settings ---------------------------------------------------
+sc set window_gap 8
+sc set border_width 2
+sc set border_color_active '#4e9bcf'
+sc set border_color_normal  '#1d252b'
+
+# --- rules ---------------------------------------------------------------------
+sc unrule
+# example: float dialogs / pop a specific app onto a tag
+# sc rule app_id~'.*[Dd]ialog.*' floating=on
+# sc rule app_id=Slack tag=2
+
+# --- multi-monitor setup (ported verbatim from the hlwm autostart) -------------
+
+# Four base monitors as explicit rects (NOT 1:1 physical outputs).
+sc set_monitors 1440x2560+0+1876 4096x2160+1440+2160 1440x2560+5536+2160 3840x2160+1440+0
+
+# Two OVERLAPPING overlay monitors on top of the 4K panels, raised, tag-locked.
+# Toggling tag 9 / tag 8 pops a full-screen scratchpad over that panel.
+sc add_monitor   4096x2160+1440+2160  9  float2
+sc raise_monitor float2
+sc lock_tag      9  float2
+# sc floating 9 on      # TODO(milestone 6): floating mode
+
+sc add_monitor   3840x2160+1440+0     8  float1
+sc raise_monitor float1
+sc lock_tag      8  float1
+# sc floating 8 on      # TODO(milestone 6): floating mode
+
+# Per-monitor padding for the bar (hlwm `pad <mon> <top> <right> <bottom> <left>`).
+sc pad 0       36 4 4 4
+sc pad 1       36 4 4 4
+sc pad 2       36 4 4 4
+sc pad 3       36 4 4 4
+sc pad float2  36 4 4 4
+sc pad float1  36 4 4 4
+
+# --- TODO: ported in later milestones ------------------------------------------
+# Keybindings (milestone 5): sc keybind $Mod-Return spawn alacritty, focus/shift,
+#   split, resize, use_index/move_index with my_monitor affinity, cycle_monitor.
+# Rules (milestone 5): sc rule app_id~... focus/manage/pseudotile.
+# Theme/borders/gaps (milestone 6). Scratchpad save/load-state (milestone 6).
+# my_monitor tag affinity + the attribute tree (milestone 4).
+
+echo "sommerfluss autostart: monitors configured" >&2
+sc list_monitors >&2

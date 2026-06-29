@@ -1,0 +1,18 @@
+#!/bin/sh
+# river's own init script — install as ~/.config/river/init and `chmod +x` it.
+#
+# Keep this minimal: it configures river itself (input, physical output layout via
+# an output-management tool, environment) and then execs sfwm as the LAST line.
+# Everything hlwm-flavored lives in the sommerfluss `autostart` that sfwm launches.
+
+# Physical output layout (Wayland moves this out of the WM, not sfwm's job).
+# Configure real output positions here with a wlr-output-management tool, e.g.:
+#   wlr-randr --output DP-1 --pos 1440,0 --output DP-2 --pos 1440,2160 ...
+# river then reports the resulting geometry to sfwm via river_output_v1.
+
+# Environment for child programs.
+# export XCURSOR_THEME=...
+# export QT_QPA_PLATFORMTHEME=qt6ct
+
+# Launch the window manager (river advertises river_window_manager_v1 only to it).
+exec sfwm
