@@ -1,0 +1,50 @@
+# Maintainer: the sommerfluss authors
+pkgname=sommerfluss
+pkgver=0.1.0
+pkgrel=4
+pkgdesc="herbstluftwm successor on river: sfwm window manager + sc control client (monitors, keybinds, frame tree, fullscreen/float/mouse/rules/borders)"
+arch=('x86_64')
+url="https://github.com/dkoch84/sommerfluss"
+license=('GPL3')
+# river provides the river-window-management-v1 + river-xkb-bindings-v1 protocols.
+# wayland provides libwayland-client.so (dlopened); libxkbcommon resolves key names.
+depends=('river' 'wayland' 'libxkbcommon')
+makedepends=('rust' 'cargo')
+options=('!debug')
+source=("$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+prepare() {
+    cd "$srcdir/$pkgname-$pkgver"
+    # Fetch dependencies up front so build() can run with --frozen.
+    export CARGO_HOME="$srcdir/cargo-home"
+    cargo fetch --locked
+}
+
+build() {
+    cd "$srcdir/$pkgname-$pkgver"
+    export CARGO_HOME="$srcdir/cargo-home"
+    export CARGO_TARGET_DIR=target
+    cargo build --frozen --release
+}
+
+check() {
+    cd "$srcdir/$pkgname-$pkgver"
+    export CARGO_HOME="$srcdir/cargo-home"
+    export CARGO_TARGET_DIR=target
+    cargo test --frozen --release -p sfwm
+}
+
+package() {
+    cd "$srcdir/$pkgname-$pkgver"
+
+    install -Dm755 target/release/sfwm "$pkgdir/usr/bin/sfwm"
+    install -Dm755 target/release/sc   "$pkgdir/usr/bin/sc"
+
+    # Example config: river's init and the sommerfluss autostart (calls sc).
+    install -Dm755 sfwm/examples/autostart  "$pkgdir/usr/share/sommerfluss/autostart"
+    install -Dm755 sfwm/examples/river-init  "$pkgdir/usr/share/sommerfluss/river-init"
+
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
