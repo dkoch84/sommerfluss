@@ -1,0 +1,18 @@
+# Rust build output
+/target/
+
+# Arch packaging build artifacts and outputs
+/packaging/src/
+/packaging/pkg/
+/packaging/*.tar.gz
+/packaging/*.pkg.tar.zst
+/pkg/
+
+# Reference inputs (not part of this project's source):
+#   files/  — the original cloud-Claude skeleton
+#   herbst/ — the herbstluftwm config being ported (its own git repo)
+/files/
+/herbst/
+
+# Editor / tooling local state
+/.claude/
