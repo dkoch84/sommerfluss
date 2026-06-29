@@ -1,0 +1,19 @@
+[package]
+name = "sfwm"
+version = "0.1.0"
+edition = "2021"
+description = "sommerfluss window manager — a herbstluftwm successor on river, with virtual/overlapping monitors"
+
+[[bin]]
+name = "sfwm"
+path = "src/main.rs"
+
+[dependencies]
+wayland-client = "0.31"
+wayland-scanner = "0.31"
+wayland-backend = "0.3"
+bitflags = "2"
+calloop = "0.14"
+calloop-wayland-source = "0.4"
+# Resolve key names (incl. XF86*) to xkbcommon keysyms for river_xkb_bindings_v1.
+xkbcommon = "0.9"
