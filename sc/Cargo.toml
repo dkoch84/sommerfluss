@@ -1,0 +1,9 @@
+[package]
+name = "sc"
+version = "0.1.0"
+edition = "2021"
+description = "sommerfluss control client — the herbstclient successor for sfwm"
+
+[[bin]]
+name = "sc"
+path = "src/main.rs"
