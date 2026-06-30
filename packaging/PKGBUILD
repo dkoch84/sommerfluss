@@ -4,7 +4,7 @@ pkgver=0.1.0
 pkgrel=4
 pkgdesc="herbstluftwm successor on river: sfwm window manager + sc control client (monitors, keybinds, frame tree, fullscreen/float/mouse/rules/borders)"
 arch=('x86_64')
-url="https://github.com/dkoch84/sommerfluss"
+url="https://github.com/dkoch84/sommerflusswm"
 license=('GPL3')
 # river provides the river-window-management-v1 + river-xkb-bindings-v1 protocols.
 # wayland provides libwayland-client.so (dlopened); libxkbcommon resolves key names.
