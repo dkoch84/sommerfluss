@@ -1,8 +1,7 @@
 # sommerfluss
 
 A manual, frame-tree tiling **window manager** for [river](https://codeberg.org/river/river)
-0.4+ — a herbstluftwm successor on Wayland, with **virtual / overlapping monitors**
-as a first-class, non-negotiable design constraint.
+0.4+ — a poor-man's herbstluftwm successor on Wayland. I hope this reads as a love letter and not a shameless copy. 
 
 Two binaries, mirroring herbstluftwm:
 
@@ -11,36 +10,10 @@ Two binaries, mirroring herbstluftwm:
 | **`sfwm`** | `herbstluftwm` | the window manager (a `river-window-management-v1` client) |
 | **`sc`**   | `herbstclient` | the control client; config is a bash script calling `sc` |
 
-## Status — milestone 2 (monitors)
+## Status 
 
-Done:
+Basic tiling, splitting, movement via keybinds or CLI commands. 
 
-- **Milestone 1 (skeleton):** connects to river, tracks outputs/windows/seats,
-  drives the manage/render sequence loop correctly. (Carried over and corrected
-  from the `hlwl` skeleton — notably `show`/`hide` are *rendering* state and now
-  run in the render pass, not the manage pass.)
-- **Milestone 2 (monitors) — the project's defining requirement:**
-  - A WM-side `Monitor` model (`sfwm/src/monitor.rs`), decoupled from river outputs:
-    arbitrary logical rects, stacking `z`, `pad`, displayed `tag`, `locked_tag`.
-  - `set_monitors` / `add_monitor` / `raise_monitor` / `lock_tag` / `pad`, plus
-    `focus_monitor` / `cycle_monitor` and a `detect_monitors` fallback.
-  - **Overlapping overlay monitors** (the hlwm `float1`/`float2` trick): an overlay
-    on the same rect as a base monitor, raised, renders *above* it. The global
-    render list is ordered by `(monitor.z, intra-monitor stack)` using
-    `river_node_v1` `place_bottom`/`place_above`.
-  - Driven at runtime over the `sc` IPC socket — a near-direct port of the hlwm
-    autostart's monitor section (see `sfwm/examples/autostart`).
-  - Pure-logic core is unit-tested (`cargo test -p sfwm`), including the
-    overlapping-overlay requirement, without needing a running river.
-
-Placeholder until later milestones: the per-monitor layout is a "monocle" (the
-topmost window of a monitor's tag fills its usable rect; others hidden). The frame
-tree + full tag model (with `my_monitor` affinity) is milestone 3; the attribute
-tree, keybinds, rules, theming, and scratchpad save/load follow.
-
-Deferred and noted in code: resolving a river output's numeric `wl_output` global
-name to a human name like `DP-1` (needs binding the `wl_output` global). The
-monitor model only needs output *geometry*, which is fully handled.
 
 ## Build
 
